@@ -101,6 +101,10 @@ function missionPortOpening() {
         missionPort.on('close', missionPortClose);
         missionPort.on('error', missionPortError);
         missionPort.on('data', missionPortData);
+
+        var gpi = {};
+        gpi.rssi = parseInt(Math.random()*100-200);
+        sendLteRssi(gpi);
     }
     else {
         if (missionPort.isOpen) {
