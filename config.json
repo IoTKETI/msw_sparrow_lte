@@ -1,6 +1,7 @@
 {
+  "name": "sparrow_LTE",
   "gcs": "KETI_MUV",
   "drone": "FC_MUV_01",
-  "serialPortNum": "/dev/ttyUSB3",
-  "serialBaudrate": "57600"
+  "serialPortNum": "/dev/ttyUSB1",
+  "serialBaudrate": "115200"
 }
