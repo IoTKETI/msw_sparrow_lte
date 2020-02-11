@@ -8,5 +8,9 @@
   },
   "keywords": [],
   "author": "IL YEUP, AHN in KETI",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "mqtt": "^3.0.0",
+    "serialport": "^8.0.7"
+  }
 }

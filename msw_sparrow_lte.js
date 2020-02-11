@@ -13,7 +13,10 @@
  */
 
 // for TAS of mission
-var moment = require('moment');
+
+var mqtt = require('mqtt');
+var fs = require('fs');
+var SerialPort = require('serialport');
 
 var config = {};
 try {
@@ -34,40 +37,21 @@ msw_mqtt_connect('localhost', 1883, noti_topic);
 
 function msw_mqtt_connect(broker_ip, port, noti_topic) {
     if(msw_mqtt_client == null) {
-        if (conf.usesecure === 'disable') {
-            var connectOptions = {
-                host: broker_ip,
-                port: port,
+        var connectOptions = {
+            host: broker_ip,
+            port: port,
 //              username: 'keti',
 //              password: 'keti123',
-                protocol: "mqtt",
-                keepalive: 10,
+            protocol: "mqtt",
+            keepalive: 10,
 //              clientId: serverUID,
-                protocolId: "MQTT",
-                protocolVersion: 4,
-                clean: true,
-                reconnectPeriod: 2000,
-                connectTimeout: 2000,
-                rejectUnauthorized: false
-            };
-        }
-        else {
-            connectOptions = {
-                host: broker_ip,
-                port: port,
-                protocol: "mqtts",
-                keepalive: 10,
-//              clientId: serverUID,
-                protocolId: "MQTT",
-                protocolVersion: 4,
-                clean: true,
-                reconnectPeriod: 2000,
-                connectTimeout: 2000,
-                key: fs.readFileSync("./server-key.pem"),
-                cert: fs.readFileSync("./server-crt.pem"),
-                rejectUnauthorized: false
-            };
-        }
+            protocolId: "MQTT",
+            protocolVersion: 4,
+            clean: true,
+            reconnectPeriod: 2000,
+            connectTimeout: 2000,
+            rejectUnauthorized: false
+        };
 
         msw_mqtt_client = mqtt.connect(connectOptions);
     }
@@ -220,9 +204,6 @@ function missionPortData(data) {
         missionStr = '';
     }
 }
-
-mqtt_client.publish(rsp_topic, JSON.stringify(rsp_message['m2m:rsp']));
-
 
 function sendLteRssi(gpi) {
     var container_name = 'LTE';
