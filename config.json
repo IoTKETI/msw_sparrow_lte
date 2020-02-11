@@ -1,0 +1,6 @@
+{
+  "gcs": "KETI_MUV",
+  "drone": "FC_MUV_01",
+  "serialPortNum": "/dev/ttyUSB3",
+  "serialBaudrate": "57600"
+}
