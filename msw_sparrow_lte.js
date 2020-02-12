@@ -137,9 +137,9 @@ function missionPortOpening() {
         else {
             missionPort.open();
 
-            fc['global_position_int'] = {};
-            fc['global_position_int'].alt = parseInt(Math.random()*100);
-            lteQ.rssi = parseInt(Math.random()*100-200);
+            if(fc.hasOwnProperty('global_position_int')) {
+                Object.assign(lteQ, JSON.parse(JSON.stringify(fc['global_position_int'])));
+            }
 
             Object.assign(lteQ, JSON.parse(JSON.stringify(fc['global_position_int'])));
 
