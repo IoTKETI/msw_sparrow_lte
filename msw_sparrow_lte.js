@@ -137,6 +137,7 @@ function missionPortOpening() {
         else {
             missionPort.open();
 
+            fc['global_position_int'] = {};
             fc['global_position_int'].alt = parseInt(Math.random()*100);
             lteQ.rssi = parseInt(Math.random()*100-200);
 
