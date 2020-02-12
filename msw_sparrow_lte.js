@@ -86,7 +86,7 @@ function msw_mqtt_connect(broker_ip, port) {
         for(var idx in noti_topic) {
             if (noti_topic.hasOwnProperty(idx)) {
                 if(topic == noti_topic[idx]) {
-                    console.log('[' + topic + '] ' + JSON.parse(message.toString()));
+                    console.log('[' + topic + '] ' + message.toString());
                     break;
                 }
             }
