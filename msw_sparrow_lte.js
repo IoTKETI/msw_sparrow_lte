@@ -98,7 +98,7 @@ function msw_mqtt_connect(broker_ip, port) {
                     var topic_arr = topic.split('/');
                     fc[topic_arr[topic_arr.length-1]] = JSON.parse(message.toString());
 
-                    console.log('[' + topic + '] ' + JSON.parse(message.toString()));
+                    console.log('[' + topic + '] ' + message.toString());
                     break;
                 }
             }
