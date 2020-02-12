@@ -14,9 +14,12 @@
 
 // for TAS of mission
 
+
 var mqtt = require('mqtt');
 var fs = require('fs');
 var SerialPort = require('serialport');
+
+var fc = {};
 
 var config = {};
 try {
@@ -33,9 +36,15 @@ catch (e) {
 
 var msw_mqtt_client = null;
 var noti_topic = [];
-msw_mqtt_connect('localhost', 1883, noti_topic);
+var fc_topic = [];
+fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone +'/heartbeat');
+fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone +'/global_position_int');
+fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone +'/attitude');
+fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone +'/battery_status');
 
-function msw_mqtt_connect(broker_ip, port, noti_topic) {
+msw_mqtt_connect('localhost', 1883);
+
+function msw_mqtt_connect(broker_ip, port) {
     if(msw_mqtt_client == null) {
         var connectOptions = {
             host: broker_ip,
@@ -64,13 +73,32 @@ function msw_mqtt_connect(broker_ip, port, noti_topic) {
                 console.log('[msw_mqtt_connect] noti_topic[' + idx + ']: ' + noti_topic[idx]);
             }
         }
+
+        for(idx in fc_topic) {
+            if(fc_topic.hasOwnProperty(idx)) {
+                msw_mqtt_client.subscribe(fc_topic[idx]);
+                console.log('[msw_mqtt_connect] fc_topic[' + idx + ']: ' + fc_topic[idx]);
+            }
+        }
     });
 
     msw_mqtt_client.on('message', function (topic, message) {
         for(var idx in noti_topic) {
             if (noti_topic.hasOwnProperty(idx)) {
                 if(topic == noti_topic[idx]) {
-                    console.log(message);
+                    console.log('[' + topic + '] ' + JSON.parse(message.toString()));
+                    break;
+                }
+            }
+        }
+
+        for(idx in fc_topic) {
+            if (fc_topic.hasOwnProperty(idx)) {
+                if(topic == fc_topic[idx]) {
+                    var topic_arr = topic.split('/');
+                    fc[topic_arr[topic_arr.length-1]] = JSON.parse(message.toString());
+
+                    console.log('[' + topic + '] ' + JSON.parse(message.toString()));
                     break;
                 }
             }
@@ -109,9 +137,12 @@ function missionPortOpening() {
         else {
             missionPort.open();
 
-            var gpi = {};
-            gpi.rssi = parseInt(Math.random()*100-200);
-            sendLteRssi(gpi);
+            fc['global_position_int'].alt = parseInt(Math.random()*100);
+            lteQ.rssi = parseInt(Math.random()*100-200);
+
+            Object.assign(lteQ, JSON.parse(JSON.stringify(fc['global_position_int'])));
+
+            setTimeout(sendLteRssi, 0, lteQ);
         }
     }
 }
@@ -151,6 +182,7 @@ function missionPortError(error) {
     setTimeout(missionPortOpening, 2000);
 }
 
+var lteQ = {};
 var missionStr = '';
 function missionPortData(data) {
     missionStr += data.toString();
@@ -165,54 +197,58 @@ function missionPortData(data) {
             if(arrLteQ.hasOwnProperty(idx)) {
                 var arrQValue = arrLteQ[idx].split(':');
                 if(arrQValue[0] == '@DBG') {
-                    gpi.GLOBAL_POSITION_INT.plmn = arrQValue[2];
+                    lteQ.plmn = arrQValue[2];
                 }
                 else if(arrQValue[0] == 'Band') {
-                    gpi.GLOBAL_POSITION_INT.band = parseInt(arrQValue[1]);
+                    lteQ.band = parseInt(arrQValue[1]);
                 }
                 else if(arrQValue[0] == 'EARFCN') {
-                    gpi.GLOBAL_POSITION_INT.earfcn = parseInt(arrQValue[1]);
+                    lteQ.earfcn = parseInt(arrQValue[1]);
                 }
                 else if(arrQValue[0] == 'Bandwidth') {
-                    gpi.GLOBAL_POSITION_INT.bandwidth = parseInt(arrQValue[1].replace('MHz', ''));
+                    lteQ.bandwidth = parseInt(arrQValue[1].replace('MHz', ''));
                 }
                 else if(arrQValue[0] == 'PCI') {
-                    gpi.GLOBAL_POSITION_INT.pci = parseInt(arrQValue[1]);
+                    lteQ.pci = parseInt(arrQValue[1]);
                 }
                 else if(arrQValue[0] == 'Cell-ID') {
-                    gpi.GLOBAL_POSITION_INT.cell_id = arrQValue[1];
+                    lteQ.cell_id = arrQValue[1];
                 }
                 else if(arrQValue[0] == 'GUTI') {
-                    gpi.GLOBAL_POSITION_INT.guti = arrQValue[1];
+                    lteQ.guti = arrQValue[1];
                 }
                 else if(arrQValue[0] == 'TAC') {
-                    gpi.GLOBAL_POSITION_INT.tac = parseInt(arrQValue[1]);
+                    lteQ.tac = parseInt(arrQValue[1]);
                 }
                 else if(arrQValue[0] == 'RSRP') {
-                    gpi.GLOBAL_POSITION_INT.rsrp = parseFloat(arrQValue[1].replace('dbm', ''));
+                    lteQ.rsrp = parseFloat(arrQValue[1].replace('dbm', ''));
                 }
                 else if(arrQValue[0] == 'RSRQ') {
-                    gpi.GLOBAL_POSITION_INT.rsrq = parseFloat(arrQValue[1].replace('dbm', ''));
+                    lteQ.rsrq = parseFloat(arrQValue[1].replace('dbm', ''));
                 }
                 else if(arrQValue[0] == 'RSSI') {
-                    gpi.GLOBAL_POSITION_INT.rssi = parseFloat(arrQValue[1].replace('dbm', ''));
+                    lteQ.rssi = parseFloat(arrQValue[1].replace('dbm', ''));
                 }
                 else if(arrQValue[0] == 'SINR') {
-                    gpi.GLOBAL_POSITION_INT.sinr = parseFloat(arrQValue[1].replace('db', ''));
+                    lteQ.sinr = parseFloat(arrQValue[1].replace('db', ''));
                 }
             }
         }
 
-        setTimeout(sendLteRssi, 0, gpi);
+        if(fc.hasOwnProperty('global_position_int')) {
+            Object.assign(lteQ, JSON.parse(JSON.stringify(fc['global_position_int'])));
+        }
+
+        setTimeout(sendLteRssi, 0, lteQ);
 
         missionStr = '';
     }
 }
 
-function sendLteRssi(gpi) {
+function sendLteRssi(lteQ) {
     var container_name = 'LTE';
     var data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + container_name;
 
-    msw_mqtt_client.publish(data_topic, JSON.stringify(gpi));
+    msw_mqtt_client.publish(data_topic, JSON.stringify(lteQ));
 }
 
