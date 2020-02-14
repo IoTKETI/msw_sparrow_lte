@@ -141,8 +141,6 @@ function missionPortOpening() {
                 Object.assign(lteQ, JSON.parse(JSON.stringify(fc['global_position_int'])));
             }
 
-            Object.assign(lteQ, JSON.parse(JSON.stringify(fc['global_position_int'])));
-
             setTimeout(sendLteRssi, 0, lteQ);
         }
     }
