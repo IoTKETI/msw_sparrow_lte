@@ -49,7 +49,6 @@ function init() {
     if(config.lib.length > 0) {
         for(var idx in config.lib) {
             if(config.lib.hasOwnProperty(idx)) {
-
                 if (msw_mqtt_client != null) {
                     for (var i = 0; i < config.lib[idx].data.length; i++) {
                         var container_name = config.lib[idx].data[i];

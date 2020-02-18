@@ -16,8 +16,6 @@
 
 
 var mqtt = require('mqtt');
-var fs = require('fs');
-var SerialPort = require('serialport');
 
 var argv = process.argv.slice(2);
 
