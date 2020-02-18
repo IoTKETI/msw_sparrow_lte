@@ -16,6 +16,8 @@
 
 
 var mqtt = require('mqtt');
+var fs = require('fs');
+var SerialPort = require('serialport');
 
 var argv = process.argv.slice(2);
 
@@ -109,12 +111,6 @@ function missionPortOpening() {
         }
         else {
             missionPort.open();
-
-            lteQ.rssi = -Math.random()*100;
-            var container_name = 'LTE';
-            var data_topic = '/MUV/data/' + lib.name + '/' + container_name;
-
-            setTimeout(send_data_to_msw, 0, data_topic, lteQ);
         }
     }
 }
