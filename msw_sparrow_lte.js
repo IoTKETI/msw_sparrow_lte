@@ -17,7 +17,7 @@
 
 var mqtt = require('mqtt');
 var fs = require('fs');
-var SerialPort = require('serialport');
+var spawn = require('child_process').spawn;
 
 var fc = {};
 
@@ -26,17 +26,77 @@ try {
     config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 }
 catch (e) {
+    config.name = 'msw_sparrow_LTE';
     config.gcs = 'KETI_MUV';
     config.drone = 'FC_MUV_01';
-    config.serialPortNum = '/dev/ttyUSB1';
-    config.serialBaudrate = '115200';
+    config.lib = [];
 
     fs.writeFileSync('config.json', JSON.stringify(cse_host, null, 4), 'utf8');
+}
+
+var add_lib = {
+    name: 'lib_sparrow_lte',
+    target: 'arm',
+    description: "[name] [portnum] [baudrate]",
+    scripts: 'node lib_sparrow_lte.js lib_sparrow_lte /dev/ttyUSB1 115200',
+    data: ['LTE'],
+    control: []
+};
+
+config.lib.push(add_lib);
+
+function init() {
+    if(config.lib.length > 0) {
+        for(var idx in config.lib) {
+            if(config.lib.hasOwnProperty(idx)) {
+
+                if (msw_mqtt_client != null) {
+                    for (var i = 0; i < config.lib[idx].data.length; i++) {
+                        var container_name = config.lib[idx].data[i];
+                        var _topic = '/MUV/data/' + config.lib[idx].name + '/' + container_name;
+                        msw_mqtt_client.subscribe(_topic);
+                        lib_topic.push(_topic);
+                        console.log('[lib_mqtt] lib_topic[' + i + ']: ' + _topic);
+                    }
+                }
+
+                var obj_lib = config.lib[idx];
+                setTimeout(set_lib_config, parseInt(Math.random()*10), JSON.parse(JSON.stringify(obj_lib)));
+            }
+        }
+    }
+}
+
+function set_lib_config(obj_lib) {
+    try {
+        var scripts_arr = obj_lib.scripts.split(' ');
+        var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
+
+        run_lib.stdout.on('data', function(data) {
+            console.log('stdout: ' + data);
+        });
+
+        run_lib.stderr.on('data', function(data) {
+            console.log('stderr: ' + data);
+        });
+
+        run_lib.on('exit', function(code) {
+            console.log('exit: ' + code);
+        });
+
+        run_lib.on('error', function(code) {
+            console.log('error: ' + code);
+        });
+    }
+    catch (e) {
+        console.log(e.message);
+    }
 }
 
 var msw_mqtt_client = null;
 var noti_topic = [];
 var fc_topic = [];
+var lib_topic = [];
 fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone +'/heartbeat');
 fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone +'/global_position_int');
 fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone +'/attitude');
@@ -86,7 +146,16 @@ function msw_mqtt_connect(broker_ip, port) {
         for(var idx in noti_topic) {
             if (noti_topic.hasOwnProperty(idx)) {
                 if(topic == noti_topic[idx]) {
-                    console.log('[' + topic + '] ' + message.toString());
+                    setTimeout(on_receive_from_nCube, parseInt(Math.random() * 5), topic, message.toString());
+                    break;
+                }
+            }
+        }
+
+        for(idx in lib_topic) {
+            if (lib_topic.hasOwnProperty(idx)) {
+                if(topic == lib_topic[idx]) {
+                    setTimeout(on_receive_from_lib, parseInt(Math.random() * 5), topic, message.toString());
                     break;
                 }
             }
@@ -110,144 +179,26 @@ function msw_mqtt_connect(broker_ip, port) {
     });
 }
 
-var missionPort = null;
-
-var missionPortNum = config.serialPortNum;
-var missionBaudrate = config.serialBaudrate;
-
-missionPortOpening();
-
-var SerialPort = require('serialport');
-
-function missionPortOpening() {
-    if (missionPort == null) {
-        missionPort = new SerialPort(missionPortNum, {
-            baudRate: parseInt(missionBaudrate, 10),
-        });
-
-        missionPort.on('open', missionPortOpen);
-        missionPort.on('close', missionPortClose);
-        missionPort.on('error', missionPortError);
-        missionPort.on('data', missionPortData);
-    }
-    else {
-        if (missionPort.isOpen) {
-
-        }
-        else {
-            missionPort.open();
-
-            if(fc.hasOwnProperty('global_position_int')) {
-                Object.assign(lteQ, JSON.parse(JSON.stringify(fc['global_position_int'])));
-            }
-
-            setTimeout(sendLteRssi, 0, lteQ);
-        }
-    }
+function on_receive_from_nCube(topic, str_message) {
+    console.log('[' + topic + '] ' + str_message);
 }
 
-function missionPortOpen() {
-    console.log('missionPort open. ' + missionPortNum + ' Data rate: ' + missionBaudrate);
+function on_receive_from_lib(topic, str_message) {
+    console.log('[' + topic + '] ' + str_message);
 
-    setInterval(lteReqGetRssi, 2000);
-}
+    var obj_lib_data = JSON.parse(str_message);
 
-function lteReqGetRssi() {
-    if(missionPort != null) {
-        if (missionPort.isOpen) {
-            //var message = new Buffer.from('AT+CSQ\r');
-            var message = new Buffer.from('AT@DBG\r');
-            missionPort.write(message);
-        }
-    }
-}
-
-function missionPortClose() {
-    console.log('missionPort closed.');
-
-    setTimeout(missionPortOpening, 2000);
-}
-
-function missionPortError(error) {
-    var error_str = error.toString();
-    console.log('[missionPort error]: ' + error.message);
-    if (error_str.substring(0, 14) == "Error: Opening") {
-
-    }
-    else {
-        console.log('missionPort error : ' + error);
+    if(fc.hasOwnProperty('global_position_int')) {
+        Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
     }
 
-    setTimeout(missionPortOpening, 2000);
+    var topic_arr = topic.split('/');
+    var data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + topic_arr[topic_arr.length-1];
+    send_mission_data(data_topic, JSON.stringify(obj_lib_data));
 }
 
-var lteQ = {};
-var missionStr = '';
-function missionPortData(data) {
-    missionStr += data.toString();
-
-    var arrRssi = missionStr.split('OK');
-
-    if(arrRssi.length >= 2) {
-        var strLteQ = arrRssi[0].replace(/ /g, '');
-        var arrLteQ = strLteQ.split(',');
-
-        for(var idx in arrLteQ) {
-            if(arrLteQ.hasOwnProperty(idx)) {
-                var arrQValue = arrLteQ[idx].split(':');
-                if(arrQValue[0] == '@DBG') {
-                    lteQ.plmn = arrQValue[2];
-                }
-                else if(arrQValue[0] == 'Band') {
-                    lteQ.band = parseInt(arrQValue[1]);
-                }
-                else if(arrQValue[0] == 'EARFCN') {
-                    lteQ.earfcn = parseInt(arrQValue[1]);
-                }
-                else if(arrQValue[0] == 'Bandwidth') {
-                    lteQ.bandwidth = parseInt(arrQValue[1].replace('MHz', ''));
-                }
-                else if(arrQValue[0] == 'PCI') {
-                    lteQ.pci = parseInt(arrQValue[1]);
-                }
-                else if(arrQValue[0] == 'Cell-ID') {
-                    lteQ.cell_id = arrQValue[1];
-                }
-                else if(arrQValue[0] == 'GUTI') {
-                    lteQ.guti = arrQValue[1];
-                }
-                else if(arrQValue[0] == 'TAC') {
-                    lteQ.tac = parseInt(arrQValue[1]);
-                }
-                else if(arrQValue[0] == 'RSRP') {
-                    lteQ.rsrp = parseFloat(arrQValue[1].replace('dbm', ''));
-                }
-                else if(arrQValue[0] == 'RSRQ') {
-                    lteQ.rsrq = parseFloat(arrQValue[1].replace('dbm', ''));
-                }
-                else if(arrQValue[0] == 'RSSI') {
-                    lteQ.rssi = parseFloat(arrQValue[1].replace('dbm', ''));
-                }
-                else if(arrQValue[0] == 'SINR') {
-                    lteQ.sinr = parseFloat(arrQValue[1].replace('db', ''));
-                }
-            }
-        }
-
-        if(fc.hasOwnProperty('global_position_int')) {
-            Object.assign(lteQ, JSON.parse(JSON.stringify(fc['global_position_int'])));
-        }
-
-        setTimeout(sendLteRssi, 0, lteQ);
-
-        missionStr = '';
-    }
+function send_mission_data(data_topic, obj_lteQ) {
+    msw_mqtt_client.publish(data_topic, JSON.stringify(obj_lteQ));
 }
 
-function sendLteRssi(lteQ) {
-    var container_name = 'LTE';
-    var data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + container_name;
-
-    msw_mqtt_client.publish(data_topic, JSON.stringify(lteQ));
-}
-
+init();
