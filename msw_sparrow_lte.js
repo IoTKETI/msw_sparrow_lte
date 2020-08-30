@@ -19,27 +19,26 @@ var mqtt = require('mqtt');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 
-var my_directory_name = '';
-exports.my_directory_name = my_directory_name;
-
 var my_msw_name = 'msw_sparrow_LTE';
 
 var fc = {};
 
 var config = {};
-// try {
-//     config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
-// }
-// catch (e) {
-//     config.name = 'msw_sparrow_LTE';
-//     config.gcs = 'KETI_MUV';
-//     config.drone = 'FC_MUV_01';
-//     config.lib = [];
-//
-//     fs.writeFileSync('config.json', JSON.stringify(cse_host, null, 4), 'utf8');
-// }
+try {
+    config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
+}
+catch (e) {
+    config.name = 'msw_sparrow_LTE';
+    config.gcs = 'KETI_MUV';
+    config.directory = '';
+    config.drone = 'FC_MUV_01';
+    config.lib = [];
+
+    fs.writeFileSync('config.json', JSON.stringify(cse_host, null, 4), 'utf8');
+}
 
 config.name = my_msw_name;
+var my_directory_name = config.directory;
 
 try {
     config.gcs = drone_info.gcs;

@@ -1,5 +1,6 @@
 {
   "name": "sparrow_LTE",
+  "directory": "",
   "gcs": "KETI_MUV",
   "drone": "FC_MUV_01",
   "lib": []
