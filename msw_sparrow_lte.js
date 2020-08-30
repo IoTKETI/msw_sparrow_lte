@@ -34,7 +34,7 @@ catch (e) {
     config.drone = 'FC_MUV_01';
     config.lib = [];
 
-    fs.writeFileSync('config.json', JSON.stringify(cse_host, null, 4), 'utf8');
+    fs.writeFileSync('config.json', JSON.stringify(config, null, 4), 'utf8');
 }
 
 config.name = my_msw_name;
