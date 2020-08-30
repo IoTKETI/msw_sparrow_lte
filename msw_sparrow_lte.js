@@ -19,6 +19,8 @@ var mqtt = require('mqtt');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 
+exports.my_directory_name = '';
+
 var my_msw_name = 'msw_sparrow_LTE';
 
 var fc = {};
@@ -76,15 +78,22 @@ function init() {
                 }
 
                 var obj_lib = config.lib[idx];
-                setTimeout(set_lib_config, parseInt(Math.random()*10), JSON.parse(JSON.stringify(obj_lib)));
+                setTimeout(runLib, 1000 + parseInt(Math.random()*10), JSON.parse(JSON.stringify(obj_lib)));
             }
         }
     }
 }
 
-function set_lib_config(obj_lib) {
+function runLib(obj_lib) {
     try {
         var scripts_arr = obj_lib.scripts.split(' ');
+        if(my_directory_name == '') {
+
+        }
+        else {
+            scripts_arr[0] = scripts_arr[0].replace('./', '');
+            scripts_arr[0] = './' + my_directory_name + '/' + scripts_arr[0];
+        }
         var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
 
         run_lib.stdout.on('data', function(data) {
