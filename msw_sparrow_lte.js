@@ -19,7 +19,8 @@ var mqtt = require('mqtt');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 
-exports.my_directory_name = '';
+var my_directory_name = '';
+exports.my_directory_name = my_directory_name;
 
 var my_msw_name = 'msw_sparrow_LTE';
 
