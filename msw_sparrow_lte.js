@@ -54,16 +54,22 @@ catch (e) {
 }
 
 // library 추가
-var add_lib = {
-    name: 'lib_sparrow_lte',
-    target: 'arm',
-    description: "[name] [portnum] [baudrate]",
-    scripts: './lib_sparrow_lte /dev/ttyUSB3 115200',
-    data: ['LTE'],
-    control: []
-};
-
-config.lib.push(add_lib);
+var add_lib = {};
+try {
+    add_lib = JSON.parse(fs.readFileSync('lib_sparrow_lte.json', 'utf8'));
+    config.lib.push(add_lib);
+}
+catch (e) {
+    add_lib = {
+        name: 'lib_sparrow_lte',
+        target: 'armv6',
+        description: "[name] [portnum] [baudrate]",
+        scripts: './lib_sparrow_lte /dev/ttyUSB3 115200',
+        data: ['LTE'],
+        control: []
+    };
+    config.lib.push(add_lib);
+}
 
 function init() {
     if(config.lib.length > 0) {
@@ -231,4 +237,4 @@ function send_mission_data(data_topic, obj_lteQ) {
     msw_mqtt_client.publish(data_topic, JSON.stringify(obj_lteQ));
 }
 
-init();
+setTimeout(init, 1000);
