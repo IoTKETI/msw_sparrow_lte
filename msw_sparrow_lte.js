@@ -19,7 +19,7 @@ var mqtt = require('mqtt');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 
-var my_msw_name = 'msw_sparrow_LTE';
+var my_msw_name = 'msw_sparrow_lte';
 
 var fc = {};
 
