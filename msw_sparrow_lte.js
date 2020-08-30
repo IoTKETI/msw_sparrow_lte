@@ -24,28 +24,30 @@ var my_msw_name = 'msw_sparrow_LTE';
 var fc = {};
 
 var config = {};
-try {
-    config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
-}
-catch (e) {
-    config.name = 'msw_sparrow_LTE';
-    config.gcs = 'KETI_MUV';
-    config.directory = '';
-    config.drone = 'FC_MUV_01';
-    config.lib = [];
-
-    fs.writeFileSync('config.json', JSON.stringify(config, null, 4), 'utf8');
-}
+// try {
+//     config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
+// }
+// catch (e) {
+//     config.name = 'msw_sparrow_LTE';
+//     config.gcs = 'KETI_MUV';
+//     config.directory = '';
+//     config.drone = 'FC_MUV_01';
+//     config.lib = [];
+//
+//     fs.writeFileSync('config.json', JSON.stringify(config, null, 4), 'utf8');
+// }
 
 config.name = my_msw_name;
-var my_directory_name = config.directory;
+var my_directory_name = '';
 
 try {
+    my_directory_name = msw_directory[my_msw_name];
     config.gcs = drone_info.gcs;
     config.drone = drone_info.drone;
     config.lib = [];
 }
 catch (e) {
+    my_directory_name = '';
     config.gcs = 'KETI_MUV';
     config.drone = 'FC_MUV_01';
     config.lib = [];
