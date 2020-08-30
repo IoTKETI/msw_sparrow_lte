@@ -95,6 +95,7 @@ function runLib(obj_lib) {
             scripts_arr[0] = scripts_arr[0].replace('./', '');
             scripts_arr[0] = './' + my_directory_name + '/' + scripts_arr[0];
         }
+        console.log('[msw]' + my_directory_name);
         var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
 
         run_lib.stdout.on('data', function(data) {
