@@ -11,7 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "child_process": "^1.0.2",
-    "mqtt": "^3.0.0",
-    "serialport": "^8.0.7"
+    "mqtt": "^3.0.0"
   }
 }

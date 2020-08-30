@@ -37,15 +37,24 @@ var config = {};
 // }
 
 config.name = my_msw_name;
-config.gcs = drone_info.gcs;
-config.drone = drone_info.drone;
 
+try {
+    config.gcs = drone_info.gcs;
+    config.drone = drone_info.drone;
+    config.lib = [];
+}
+catch (e) {
+    config.gcs = 'KETI_MUV';
+    config.drone = 'FC_MUV_01';
+    config.lib = [];
+}
 
+// library 추가
 var add_lib = {
     name: 'lib_sparrow_lte',
     target: 'arm',
     description: "[name] [portnum] [baudrate]",
-    scripts: 'node lib_sparrow_lte.js lib_sparrow_lte /dev/ttyUSB1 115200',
+    scripts: './lib_sparrow_lte /dev/ttyUSB3 115200',
     data: ['LTE'],
     control: []
 };
