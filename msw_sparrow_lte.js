@@ -171,7 +171,7 @@ function msw_mqtt_connect(broker_ip, port) {
             for(var idx in msw_sub_muv_topic) {
                 if (msw_sub_muv_topic.hasOwnProperty(idx)) {
                     if(topic == msw_sub_muv_topic[idx]) {
-                        setTimeout(on_receive_from_nCube, parseInt(Math.random() * 5), topic, message.toString());
+                        setTimeout(on_receive_from_muv, parseInt(Math.random() * 5), topic, message.toString());
                         break;
                     }
                 }
@@ -202,25 +202,24 @@ function msw_mqtt_connect(broker_ip, port) {
     }
 }
 
-function on_receive_from_nCube(topic, str_message) {
+function on_receive_from_muv(topic, str_message) {
     console.log('[' + topic + '] ' + str_message);
-    var topic_arr = topic.split('/');
-    var _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length-1];
-    msw_mqtt_client.publish(_topic, str_message);
+
+    parseControlMission(str_message, function (obj_muv_control) {
+        var topic_arr = topic.split('/');
+        var _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length - 1];
+        msw_mqtt_client.publish(_topic, JSON.stringify(obj_muv_control));
+    });
 }
 
 function on_receive_from_lib(topic, str_message) {
     console.log('[' + topic + '] ' + str_message);
 
-    var obj_lib_data = JSON.parse(str_message);
-
-    if(fc.hasOwnProperty('global_position_int')) {
-        Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
-    }
-
-    var topic_arr = topic.split('/');
-    var data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + topic_arr[topic_arr.length-1];
-    send_mission_data(data_topic + config.sortie_name, JSON.stringify(obj_lib_data));
+    parseDataMission(str_message, function (obj_lib_data) {
+        var topic_arr = topic.split('/');
+        var data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + topic_arr[topic_arr.length-1];
+        msw_mqtt_client.publish(data_topic + config.sortie_name, JSON.stringify(obj_lib_data));
+    });
 }
 
 function on_process_fc_data(topic, str_message) {
@@ -234,3 +233,33 @@ function on_process_fc_data(topic, str_message) {
 }
 
 setTimeout(init, 1000);
+
+// 유저 디파인 미션 소프트웨어 기능
+
+function parseDataMission(str_message, callback) {
+    var obj_lib_data = {};
+    try {
+        obj_lib_data = JSON.parse(str_message);
+        if(fc.hasOwnProperty('global_position_int')) {
+            Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
+        }
+        callback(obj_lib_data);
+    }
+    catch (e) {
+        console.log('[parseDataMission] data format of lib is not json');
+        callback(obj_lib_data);
+    }
+}
+
+function parseControlMission(str_message, callback) {
+    var obj_muv_control = {};
+
+    try {
+        obj_muv_control = JSON.parse(str_message);
+        callback(obj_muv_control);
+    }
+    catch (e) {
+        console.log('[parseDataMission] data format of lib is not json');
+        callback(obj_muv_control);
+    }
+}
