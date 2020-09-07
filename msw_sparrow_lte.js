@@ -205,74 +205,62 @@ function msw_mqtt_connect(broker_ip, port) {
 function on_receive_from_muv(topic, str_message) {
     console.log('[' + topic + '] ' + str_message);
 
-    parseControlMission(topic, str_message, function (obj_muv_control) {
-    });
+    parseControlMission(topic, str_message);
 }
 
 function on_receive_from_lib(topic, str_message) {
     console.log('[' + topic + '] ' + str_message);
 
-    parseDataMission(topic, str_message, function (obj_lib_data) {
-    });
+    parseDataMission(topic, str_message);
 }
 
 function on_process_fc_data(topic, str_message) {
     var topic_arr = topic.split('/');
     fc[topic_arr[topic_arr.length-1]] = JSON.parse(str_message.toString());
 
-    parseFcData(topic, str_message, function () {
-    });
+    parseFcData(topic, str_message);
 }
 
 setTimeout(init, 1000);
 
 // 유저 디파인 미션 소프트웨어 기능
-
-function parseDataMission(topic, str_message, callback) {
-    var obj_lib_data = {};
+///////////////////////////////////////////////////////////////////////////////
+function parseDataMission(topic, str_message) {
     try {
-        obj_lib_data = JSON.parse(str_message);
-
         // User define Code
+        var obj_lib_data = JSON.parse(str_message);
+
         if(fc.hasOwnProperty('global_position_int')) {
             Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
         }
+        str_message = JSON.stringify(obj_lib_data);
         ///////////////////////////////////////////////////////////////////////
 
         var topic_arr = topic.split('/');
         var data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + topic_arr[topic_arr.length-1];
-        msw_mqtt_client.publish(data_topic + config.sortie_name, JSON.stringify(obj_lib_data));
-
-        callback(obj_lib_data);
+        msw_mqtt_client.publish(data_topic + config.sortie_name, str_message);
     }
     catch (e) {
         console.log('[parseDataMission] data format of lib is not json');
-        callback(obj_lib_data);
     }
 }
+///////////////////////////////////////////////////////////////////////////////
 
-function parseControlMission(topic, str_message, callback) {
-    var obj_muv_control = {};
-
+function parseControlMission(topic, str_message) {
     try {
-        obj_muv_control = JSON.parse(str_message);
-
         // User define Code
         ///////////////////////////////////////////////////////////////////////
 
         var topic_arr = topic.split('/');
         var _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length - 1];
-        msw_mqtt_client.publish(_topic, JSON.stringify(obj_muv_control));
-
-        callback(obj_muv_control);
+        msw_mqtt_client.publish(_topic, str_message);
     }
     catch (e) {
         console.log('[parseDataMission] data format of lib is not json');
-        callback(obj_muv_control);
     }
 }
 
-function parseFcData(topic, str_message, callback) {
+function parseFcData(topic, str_message) {
     // User define Code
     // var topic_arr = topic.split('/');
     // if(topic_arr[topic_arr.length-1] == 'global_position_int') {
