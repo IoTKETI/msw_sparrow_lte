@@ -96,6 +96,9 @@ function init() {
                             console.log('[lib_mqtt] lib_topic[' + i + ']: ' + _topic);
                         }
                     }
+                    else{
+                        console.log("lib.control.length undefined")
+                    }
                 }
 
                 var obj_lib = config.lib[idx];
