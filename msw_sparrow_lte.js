@@ -45,7 +45,6 @@ var add_lib = {};
 try {
     add_lib = JSON.parse(fs.readFileSync('lib_sparrow_lte.json', 'utf8'));
     config.lib.push(add_lib);
-    console.log('try- add_lib:', add_lib);
 }
 catch (e) {
     add_lib = {
@@ -57,8 +56,6 @@ catch (e) {
         control: []
     };
     config.lib.push(add_lib);
-    console.log('catch- add_lib:', add_lib);
-
 }
 
 // msw가 muv로 부터 트리거를 받는 용도
@@ -206,13 +203,13 @@ function msw_mqtt_connect(broker_ip, port) {
 }
 
 function on_receive_from_muv(topic, str_message) {
-    console.log('from muv - [' + topic + '] ' + str_message);
+    console.log('[' + topic + '] ' + str_message);
 
     parseControlMission(topic, str_message);
 }
 
 function on_receive_from_lib(topic, str_message) {
-    console.log('from lib - [' + topic + '] ' + str_message);
+    console.log('[' + topic + '] ' + str_message);
 
     parseDataMission(topic, str_message);
 }
