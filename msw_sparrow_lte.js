@@ -54,7 +54,7 @@ catch (e) {
         description: "[name] [portnum] [baudrate]",
         scripts: './lib_sparrow_lte /dev/ttyUSB3 115200',
         data: ['LTE'],
-        control: []
+        control: ['']
     };
     config.lib.push(add_lib);
     console.log('catch- add_lib:', add_lib);
