@@ -78,6 +78,7 @@ function init() {
         for(var idx in config.lib) {
             if(config.lib.hasOwnProperty(idx)) {
                 if (msw_mqtt_client != null) {
+                    console.log(config.lib[idx].control);
                     for (var i = 0; i < config.lib[idx].control.length; i++) {
                         var sub_container_name = config.lib[idx].control[i];
                         _topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + sub_container_name;
