@@ -203,13 +203,13 @@ function msw_mqtt_connect(broker_ip, port) {
 }
 
 function on_receive_from_muv(topic, str_message) {
-    console.log('[' + topic + '] ' + str_message);
+    console.log('from muv - [' + topic + '] ' + str_message);
 
     parseControlMission(topic, str_message);
 }
 
 function on_receive_from_lib(topic, str_message) {
-    console.log('[' + topic + '] ' + str_message);
+    console.log('from lib - [' + topic + '] ' + str_message);
 
     parseDataMission(topic, str_message);
 }
