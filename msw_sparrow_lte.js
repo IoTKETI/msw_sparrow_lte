@@ -48,10 +48,10 @@ try {
 }
 catch (e) {
     add_lib = {
-        name: 'msw_lte',
+        name: 'lib_sparrow_lte',
         target: 'armv6',
         description: "[name] [portnum] [baudrate]",
-        scripts: './msw_lte /dev/ttyUSB3 115200',
+        scripts: './lib_sparrow_lte /dev/ttyUSB3 115200',
         data: ['LTE'],
         control: []
     };
