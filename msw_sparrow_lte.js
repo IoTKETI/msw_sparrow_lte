@@ -43,8 +43,7 @@ catch (e) {
 // library 추가
 var add_lib = {};
 try {
-//     add_lib = JSON.parse(fs.readFileSync('lib_sparrow_lte.json', 'utf8'));
-    add_lib = JSON.parse(fs.readFileSync('msw_lte.json', 'utf8'));
+    add_lib = JSON.parse(fs.readFileSync('lib_sparrow_lte.json', 'utf8'));
     config.lib.push(add_lib);
 }
 catch (e) {
