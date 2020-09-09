@@ -112,7 +112,7 @@ def missionPortData(missionPort):
         missionStr = missionPort.readlines()
 
         arrLTEQ = missionStr[1].decode("utf-8").split(", ")
-        print ('arrLTEQ: \n', arrLTEQ)
+        # print ('arrLTEQ: \n', arrLTEQ)
         # # KT USIM
         # for idx in range(len(arrLTEQ)):
         #     arrQValue = arrLTEQ[idx].split(':')
@@ -179,7 +179,7 @@ def missionPortData(missionPort):
             elif (arrQValue[0] == 'ESM Cause'):
                 lteQ['esm_cause'] = arrQValue[1].split(",")[0]
 
-        print ('lteQ: \n', lteQ)
+        # print ('lteQ: \n', lteQ)
 
         container_name = lib["data"][0]
         data_topic = '/MUV/data/' + lib["name"] + '/' + container_name
@@ -188,7 +188,7 @@ def missionPortData(missionPort):
         send_data_to_msw(data_topic, lteQ)
 
         lteQ = dict()
-        print(lteQ)
+        # print(lteQ)
 
 
 if __name__ == '__main__':
